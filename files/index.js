@@ -98,4 +98,42 @@ function runServer() {
   });
 }
 
+// 实现 reRunServer 函数
+function reRunServer(callback) {
+  // 检查 server 进程是否存在
+  const checkCommand = `pgrep -f "server tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}"`;
+  exec(checkCommand, (error, stdout) => {
+    if (stdout.trim()) {
+      // 如果进程已存在
+      console.log('server is already running');
+      callback(null, 'server is already running');
+    } else {
+      // 如果进程不存在，启动 server
+      const startCommand = `nohup ./server tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH} >/dev/null 2>&1 &`;
+      exec(startCommand, (error) => {
+        if (error) {
+          console.error(`server running error: ${error}`);
+          callback(error, null); // 将错误返回给客户端
+        } else {
+          console.log('server is running');
+          callback(null, 'server is running'); // 将成功信息返回给客户端
+        }
+      });
+    }
+  });
+}
+
+// 定义 /reRunServer 路由
+app.get('/reRunServer', function (req, res) {
+  reRunServer((error, message) => {
+    if (error) {
+      // 如果出错，返回 500 状态码和错误信息
+      res.status(500).json({ error: error.message });
+    } else {
+      // 如果成功，返回 200 状态码和成功信息
+      res.status(200).json({ message });
+    }
+  });
+});
+
 app.listen(port, () => console.log(`App is listening on port ${port}!`));
