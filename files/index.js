@@ -44,6 +44,19 @@ app.get('/reRunWeb', function (req, res) {
   });
 });
 
+// 定义 /reRunServer 路由
+app.get('/reRunServer', function (req, res) {
+  reRunServer((error, message) => {
+    if (error) {
+      // 如果出错，返回 500 状态码和错误信息
+      res.status(500).json({ error: error.message });
+    } else {
+      // 如果成功，返回 200 状态码和成功信息
+      res.status(200).json({ message });
+    }
+  });
+});
+
 runWeb();
 
 // run-web
@@ -122,18 +135,5 @@ function reRunServer(callback) {
     }
   });
 }
-
-// 定义 /reRunServer 路由
-app.get('/reRunServer', function (req, res) {
-  reRunServer((error, message) => {
-    if (error) {
-      // 如果出错，返回 500 状态码和错误信息
-      res.status(500).json({ error: error.message });
-    } else {
-      // 如果成功，返回 200 状态码和成功信息
-      res.status(200).json({ message });
-    }
-  });
-});
 
 app.listen(port, () => console.log(`App is listening on port ${port}!`));
