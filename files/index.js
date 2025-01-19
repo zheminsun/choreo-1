@@ -31,6 +31,19 @@ app.get('/sub', (req, res) => {
   res.type('text/plain; charset=utf-8').send(base64Content);
 });
 
+// 定义 /runWeb 路由
+app.get('/reRunWeb', function (req, res) {
+  reRunWeb((error, message) => {
+    if (error) {
+      // 如果出错，返回 500 状态码和错误信息
+      res.status(500).json({ error: error.message });
+    } else {
+      // 如果成功，返回 200 状态码和成功信息
+      res.status(200).json({ message });
+    }
+  });
+});
+
 runWeb();
 
 // run-web
@@ -45,6 +58,30 @@ function runWeb() {
       setTimeout(() => {
         runServer();
       }, 2000);
+    }
+  });
+}
+// 实现 reRunWeb 函数
+function reRunWeb(callback) {
+  // 检查进程是否存在
+  const checkCommand = `pgrep -f "./web -c ./config.json"`;
+  exec(checkCommand, (error, stdout) => {
+    if (stdout.trim()) {
+      // 如果进程已存在
+      console.log('web is already running');
+      callback(null, 'web is already running');
+    } else {
+      // 如果进程不存在，启动进程
+      const startCommand = `nohup ./web -c ./config.json >/dev/null 2>&1 &`;
+      exec(startCommand, (error) => {
+        if (error) {
+          console.error(`web running error: ${error}`);
+          callback(error, null); // 将错误返回给客户端
+        } else {
+          console.log('web is running');
+          callback(null, 'web is running'); // 将成功信息返回给客户端
+        }
+      });
     }
   });
 }
