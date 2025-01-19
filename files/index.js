@@ -3,12 +3,9 @@ const app = express();
 const { exec, execSync } = require('child_process');
 const port = process.env.SERVER_PORT || process.env.PORT || 3000;        
 const UUID = process.env.UUID || '986e0d08-b275-4dd3-9e75-f3094b36fa2a'; //若需要改UUID，需要在config.json里改为一致
-const NEZHA_SERVER = process.env.NEZHA_SERVER || '';     
-const NEZHA_PORT = process.env.NEZHA_PORT || '';                     // 哪吒端口为{443,8443,2096,2087,2083,2053}其中之一开启tls
-const NEZHA_KEY = process.env.NEZHA_KEY || '';
 const ARGO_DOMAIN = process.env.ARGO_DOMAIN || 'astronodes.302046.xyz';     // 建议使用token，argo端口8080，cf后台设置需对应,使用json需上传json和yml文件至files目录
 const ARGO_AUTH = process.env.ARGO_AUTH || 'eyJhIjoiMWQzOGFjODVkM2NjNDY4ZGQ5YjQxM2VhZmNlZjQxOTIiLCJ0IjoiYTllYzRjMGEtOWEwYi00Zjg2LWIxMmItMzFiOWNkNDRlZmZmIiwicyI6Ik5tUXlZV1UzTVdFdFkyWXpZeTAwWWpreExUZzBNR0V0WXpOaU9XSXpaalZrTTJNeSJ9';
-const CFIP = process.env.CFIP || 'na.ma';
+const CFIP = process.env.CFIP || 'www.visa.com.tw';
 const NAME = process.env.NAME || 'Choreo';
 
 // root route
@@ -34,32 +31,9 @@ app.get('/sub', (req, res) => {
   res.type('text/plain; charset=utf-8').send(base64Content);
 });
 
-// run-nezha
-  let NEZHA_TLS = '';
-  if (NEZHA_SERVER && NEZHA_PORT && NEZHA_KEY) {
-    const tlsPorts = ['443', '8443', '2096', '2087', '2083', '2053'];
-    if (tlsPorts.includes(NEZHA_PORT)) {
-      NEZHA_TLS = '--tls';
-    } else {
-      NEZHA_TLS = '';
-    }
-  const command = `nohup ./swith -s ${NEZHA_SERVER}:${NEZHA_PORT} -p ${NEZHA_KEY} ${NEZHA_TLS} >/dev/null 2>&1 &`;
-  try {
-    exec(command);
-    console.log('swith is running');
+runWeb();
 
-    setTimeout(() => {
-      runWeb();
-    }, 2000);
-  } catch (error) {
-    console.error(`swith running error: ${error}`);
-  }
-} else {
-  console.log('NEZHA variable is empty, skip running');
-  runWeb();
-}
-
-// run-xr-ay
+// run-web
 function runWeb() {
   const command1 = `nohup ./web -c ./config.json >/dev/null 2>&1 &`;
   exec(command1, (error) => {
